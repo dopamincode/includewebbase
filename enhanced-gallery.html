@@ -1,0 +1,117 @@
+<link rel="stylesheet" href="video_list.css" />
+
+<!-- 
+Nav Bar Start
+-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Videos Portfolio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>Videos Portfolio</h1>
+  </header>
+
+  <nav class="nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="actress-list.html">Actress List</a></li>
+      <li><a href="enhanced-gallery.html">Videos</a></li>
+      <li><a href="enhanced-gallery.html">Gallery</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- 
+Nav Bar End
+-->
+  <section class="video-section">
+    <div class="video-container">
+      <!-- Search Bar -->
+      <input
+        type="text"
+        id="videoSearch"
+        class="video-search"
+        placeholder="Search videos..."
+        aria-label="Search videos"
+      />
+
+      <!-- Category Filter -->
+      <div class="video-categories" id="categoryFilter">
+        <button class="category-btn active" data-category="all">All</button>
+        <button class="category-btn" data-category="funny">Funny</button>
+        <button class="category-btn" data-category="entertainment">
+          Entertainment
+        </button>
+        <button class="category-btn" data-category="short series">
+          Series
+        </button>
+        <button class="category-btn" data-category="anime">Anime</button>
+      </div>
+
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
+  </section>
+
+  <script src="/js/datascript.js"></script>
+
+  <style>
+    .video-search {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .video-categories {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .category-btn {
+      padding: 8px 12px;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .category-btn.active {
+      background: #007bff;
+      color: white;
+    }
+
+    .video-card {
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      max-height: 400px;
+      overflow: hidden;
+    }
+
+    .video-info {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .video-title {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+  </style>
+</body>

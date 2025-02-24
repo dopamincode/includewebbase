@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actress Profile & Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            color: white;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .profile-header {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid white;
+            overflow: hidden;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .gallery-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .filter-btn {
+            padding: 0.8rem 1.5rem;
+            background: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem;
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover .image-overlay {
+            transform: translateY(0);
+        }
+
+        .overlay-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .overlay-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .view-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .download-btn {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .image-quality-select {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stats {
+                justify-content: center;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .gallery-item img {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="profile-header">
+            <div class="profile-image">
+                <img src="/api/placeholder/200/200" alt="Actress Name">
+            </div>
+            <div class="profile-info">
+                <h1>Actress Name</h1>
+                <p>Famous Web Series Actress</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">25</div>
+                        <div class="stat-label">Projects</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">1.2M</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">4.8</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="gallery-filters">
+            <button class="filter-btn active" data-category="all">All Photos</button>
+            <button class="filter-btn" data-category="photoshoot">Photoshoot</button>
+            <button class="filter-btn" data-category="events">Events</button>
+            <button class="filter-btn" data-category="behindscenes">Behind The Scenes</button>
+            <button class="filter-btn" data-category="personal">Personal</button>
+        </div>
+
+        <div class="gallery-grid" id="galleryGrid">
+            <!-- Gallery items will be loaded here -->
+             <a href="https://www.imagebam.com/view/MEZUS7A" target="_blank">
+                <img src="https://thumbs4.imagebam.com/8b/97/1f/MEZUS7A_t.jpg"
+                 alt="1-anisha-verma1-anvi.jpg"/></a>
+                 <a href="https://www.imagebam.com/view/MEZUS7B" target="_blank">
+                    <img src="https://thumbs4.imagebam.com/a9/a7/83/MEZUS7B_t.jpg" alt="2-anisha-verma1-img-20160624-wa0003.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7C" target="_blank"><img src="https://thumbs4.imagebam.com/f6/6f/23/MEZUS7C_t.jpg" alt="3-anisha-verma1-photo_2019-01-04_14-15-15.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7D" target="_blank"><img src="https://thumbs4.imagebam.com/91/53/c8/MEZUS7D_t.jpg" alt="3ttiwz.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7F" target="_blank"><img src="https://thumbs4.imagebam.com/3b/f1/50/MEZUS7F_t.jpg" alt="4-anisha-verma1-photo_2019-01-04_14-15-24.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7G" target="_blank"><img src="https://thumbs4.imagebam.com/d0/63/10/MEZUS7G_t.jpg" alt="5-anisha-verma1-photo_2019-09-14_13-51-38.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7H" target="_blank"><img src="https://thumbs4.imagebam.com/7b/5d/81/MEZUS7H_t.jpg" alt="6-anisha-verma1-photo_2019-09-14_13-51-44.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7I" target="_blank"><img src="https://thumbs4.imagebam.com/da/90/0d/MEZUS7I_t.jpg" alt="7-anisha-verma1-photo_2019-09-14_13-51-47.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7J" target="_blank"><img src="https://thumbs4.imagebam.com/78/18/2d/MEZUS7J_t.jpg" alt="8-anisha-verma1-photo_2019-09-14_13-51-51.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7L" target="_blank"><img src="https://thumbs4.imagebam.com/e4/89/1a/MEZUS7L_t.jpg" alt="9-anisha-verma1-photo_2019-09-14_13-51-53.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7N" target="_blank"><img src="https://thumbs4.imagebam.com/55/63/61/MEZUS7N_t.jpg" alt="10-anisha-verma1-photo_2019-09-14_13-51-56.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7P" target="_blank"><img src="https://thumbs4.imagebam.com/52/ea/b0/MEZUS7P_t.jpg" alt="11-anisha-verma1-preview330.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7R" target="_blank"><img src="https://thumbs4.imagebam.com/91/30/c9/MEZUS7R_t.jpg" alt="12-anisha-verma1-preview331.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7T" target="_blank"><img src="https://thumbs4.imagebam.com/52/51/0b/MEZUS7T_t.jpg" alt="13-anisha-verma1-v1.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7V" target="_blank"><img src="https://thumbs4.imagebam.com/26/5a/31/MEZUS7V_t.jpg" alt="14-anisha-verma12-anisha3.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7X" target="_blank"><img src="https://thumbs4.imagebam.com/52/2b/a1/MEZUS7X_t.jpg" alt="15-anisha-verma12-anisha6.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS7Y" target="_blank"><img src="https://thumbs4.imagebam.com/b9/54/e2/MEZUS7Y_t.jpg" alt="16-anisha-verma12-anisha7.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS80" target="_blank"><img src="https://thumbs4.imagebam.com/2f/4a/c2/MEZUS80_t.jpg" alt="17-anisha-verma12-anisha8.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS81" target="_blank"><img src="https://thumbs4.imagebam.com/0d/20/12/MEZUS81_t.jpg" alt="18-anisha-verma12-anisha9.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS82" target="_blank"><img src="https://thumbs4.imagebam.com/ef/27/05/MEZUS82_t.jpg" alt="19-anisha.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS84" target="_blank"><img src="https://thumbs4.imagebam.com/fa/59/58/MEZUS84_t.jpg" alt="20-anisha10-verma.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS87" target="_blank"><img src="https://thumbs4.imagebam.com/5c/2c/c2/MEZUS87_t.jpg" alt="21-anisha11-verma.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS89" target="_blank"><img src="https://thumbs4.imagebam.com/9e/f7/53/MEZUS89_t.jpg" alt="22-anisha12-verma.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8A" target="_blank"><img src="https://thumbs4.imagebam.com/42/a3/48/MEZUS8A_t.jpg" alt="23-anisha13-verma.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8C" target="_blank"><img src="https://thumbs4.imagebam.com/d0/3f/19/MEZUS8C_t.jpg" alt="24-anisha1-photo_2019-11-14_16-34-21.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8E" target="_blank"><img src="https://thumbs4.imagebam.com/b5/89/bc/MEZUS8E_t.jpg" alt="25-anisha1-photo_2019-11-14_16-34-26.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8F" target="_blank"><img src="https://thumbs4.imagebam.com/5b/4f/5a/MEZUS8F_t.jpg" alt="26-anisha1-photo_2019-11-14_16-34-27.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8G" target="_blank"><img src="https://thumbs4.imagebam.com/36/91/c0/MEZUS8G_t.jpeg" alt="1080x360.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8H" target="_blank"><img src="https://thumbs4.imagebam.com/32/34/47/MEZUS8H_t.jpg" alt="448484941_3778514369052514_5845444146703968294_n.jpg"/></a><a href="https://www.imagebam.com/view/MEZUS8I" target="_blank"><img src="https://thumbs4.imagebam.com/c4/0f/8e/MEZUS8I_t.jpeg" alt="15572126290504un3mlvink.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8J" target="_blank"><img src="https://thumbs4.imagebam.com/3d/32/27/MEZUS8J_t.jpeg" alt="B_-4NvGUgAAnzZf.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8K" target="_blank"><img src="https://thumbs4.imagebam.com/d7/de/ff/MEZUS8K_t.jpeg" alt="B4BavHWCMAA3Lsf.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8L" target="_blank"><img src="https://thumbs4.imagebam.com/7a/a9/72/MEZUS8L_t.jpeg" alt="B4leD_hCQAA_4Cf.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8O" target="_blank"><img src="https://thumbs4.imagebam.com/e0/98/09/MEZUS8O_t.jpeg" alt="B5mS9WeCYAA8lHe.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8Q" target="_blank"><img src="https://thumbs4.imagebam.com/04/d2/f6/MEZUS8Q_t.jpeg" alt="B5NV1CRCQAEbHfB.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8S" target="_blank"><img src="https://thumbs4.imagebam.com/a2/f4/83/MEZUS8S_t.jpeg" alt="B6Rn6JXCEAEw_g1.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8T" target="_blank"><img src="https://thumbs4.imagebam.com/ad/4f/cc/MEZUS8T_t.jpeg" alt="B7SXl5cCQAAig3s.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8W" target="_blank"><img src="https://thumbs4.imagebam.com/4f/d4/d5/MEZUS8W_t.jpeg" alt="B7SXlxYCcAA0seN.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8Y" target="_blank"><img src="https://thumbs4.imagebam.com/4b/4b/58/MEZUS8Y_t.jpeg" alt="B8cvcgfCIAAW834.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS8Z" target="_blank"><img src="https://thumbs4.imagebam.com/b8/6d/9d/MEZUS8Z_t.jpeg" alt="B9e_BGWCEAErNcZ.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS90" target="_blank"><img src="https://thumbs4.imagebam.com/3f/83/61/MEZUS90_t.jpeg" alt="B9e_JjnCEAEcjCa.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS91" target="_blank"><img src="https://thumbs4.imagebam.com/cf/2a/4b/MEZUS91_t.jpeg" alt="B9M0tVhCcAIVOH1.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS93" target="_blank"><img src="https://thumbs4.imagebam.com/62/96/24/MEZUS93_t.jpeg" alt="B82V17CCEAAyeh2.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS94" target="_blank"><img src="https://thumbs4.imagebam.com/f0/e9/47/MEZUS94_t.jpeg" alt="B82VvjrCcAA0irh.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS96" target="_blank"><img src="https://thumbs4.imagebam.com/1e/06/f5/MEZUS96_t.jpeg" alt="B87krDICUAAr9Ds.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS98" target="_blank"><img src="https://thumbs4.imagebam.com/ca/80/45/MEZUS98_t.jpeg" alt="B95Oh8qCAAAxd-L.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS99" target="_blank"><img src="https://thumbs4.imagebam.com/a0/e3/24/MEZUS99_t.jpeg" alt="B95ONmjCAAA2-yN.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9C" target="_blank"><img src="https://thumbs4.imagebam.com/07/0c/da/MEZUS9C_t.jpeg" alt="B95YNNhCEAAY5yA.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9E" target="_blank"><img src="https://thumbs4.imagebam.com/5a/c4/9e/MEZUS9E_t.jpeg" alt="B803ApbCUAAawur.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9G" target="_blank"><img src="https://thumbs4.imagebam.com/38/c2/af/MEZUS9G_t.jpeg" alt="B803FSPCUAAp7j-.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9H" target="_blank"><img src="https://thumbs4.imagebam.com/e0/38/b0/MEZUS9H_t.jpeg" alt="B-DTyqiCcAM13Lu.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9I" target="_blank"><img src="https://thumbs4.imagebam.com/bd/6a/fb/MEZUS9I_t.jpeg" alt="B-DUcXjCcAAVoo7.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9K" target="_blank"><img src="https://thumbs4.imagebam.com/46/26/fc/MEZUS9K_t.jpeg" alt="B-Id9J7CQAARljQ.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9L" target="_blank"><img src="https://thumbs4.imagebam.com/47/01/7e/MEZUS9L_t.jpeg" alt="B-IeLTiCYAA02Re.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9M" target="_blank"><img src="https://thumbs4.imagebam.com/03/a3/e1/MEZUS9M_t.jpeg" alt="B-If09BCAAA7C6j.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9O" target="_blank"><img src="https://thumbs4.imagebam.com/dd/46/87/MEZUS9O_t.jpeg" alt="B-IfLMLCMAAn7LR.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9R" target="_blank"><img src="https://thumbs4.imagebam.com/a1/08/c4/MEZUS9R_t.jpeg" alt="B-ML9VhCQAAXeQK.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9T" target="_blank"><img src="https://thumbs4.imagebam.com/b4/a8/ae/MEZUS9T_t.jpeg" alt="CAcYjq-U8AEqz1U.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9W" target="_blank"><img src="https://thumbs4.imagebam.com/56/5a/93/MEZUS9W_t.jpeg" alt="CAcYqYvUsAAMzah.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUS9Y" target="_blank"><img src="https://thumbs4.imagebam.com/c0/54/3b/MEZUS9Y_t.jpeg" alt="CCoWi4QUMAA7Ogw.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA1" target="_blank"><img src="https://thumbs4.imagebam.com/45/b0/0d/MEZUSA1_t.jpeg" alt="CCzwMUoVEAEXp9S.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA2" target="_blank"><img src="https://thumbs4.imagebam.com/39/1a/ca/MEZUSA2_t.jpeg" alt="CDVofOmUIAE_NcY.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA5" target="_blank"><img src="https://thumbs4.imagebam.com/c1/01/23/MEZUSA5_t.jpeg" alt="CDVoXLTVIAAQWPX.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA6" target="_blank"><img src="https://thumbs4.imagebam.com/a8/19/68/MEZUSA6_t.jpeg" alt="CEn8AcYUEAIXPpY.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA8" target="_blank"><img src="https://thumbs4.imagebam.com/e7/e1/2e/MEZUSA8_t.jpeg" alt="CEP9gWUUEAEYwgF.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSA9" target="_blank"><img src="https://thumbs4.imagebam.com/df/e2/5d/MEZUSA9_t.jpeg" alt="CEQXx37UkAAhk8J.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAD" target="_blank"><img src="https://thumbs4.imagebam.com/a8/99/96/MEZUSAD_t.jpeg" alt="CFh7_e_UIAA5wtW.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAE" target="_blank"><img src="https://thumbs4.imagebam.com/8d/1c/6b/MEZUSAE_t.jpeg" alt="CFh8EwKUIAAuaoz.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAG" target="_blank"><img src="https://thumbs4.imagebam.com/df/1d/22/MEZUSAG_t.jpeg" alt="CGGwaSuUEAELWjH.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAI" target="_blank"><img src="https://thumbs4.imagebam.com/79/f9/4a/MEZUSAI_t.jpeg" alt="CGGwKVsUgAIqsLE.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAK" target="_blank"><img src="https://thumbs4.imagebam.com/b2/a7/f2/MEZUSAK_t.jpeg" alt="CGKbMHQUgAIEu35.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAM" target="_blank"><img src="https://thumbs4.imagebam.com/84/ba/a9/MEZUSAM_t.jpg" alt="Db3fRG9U8AIn0rV.jpg_large.jpg"/></a><a href="https://www.imagebam.com/view/MEZUSAN" target="_blank"><img src="https://thumbs4.imagebam.com/e5/16/25/MEZUSAN_t.jpeg" alt="F1hSsUmX0AIm7lk.jpeg"/></a><a href="https://www.imagebam.com/view/MEZUSAO" target="_blank"><img src="https://thumbs4.imagebam.com/59/fe/4f/MEZUSAO_t.jpg" alt="0-anisha-verma-1.jpg"/></a>
+        </div>
+    </main>
+
+    <div class="lightbox">
+        <button class="close-lightbox">×</button>
+        <div class="lightbox-content">
+            <img src="" alt="" class="lightbox-img">
+            <div class="lightbox-nav">
+                <button class="nav-btn prev">❮</button>
+                <button class="nav-btn next">❯</button>
+            </div>
+            <select class="image-quality-select">
+                <option value="low">Low Quality</option>
+                <option value="medium">Medium Quality</option>
+                <option value="high">High Quality</option>
+                <option value="original">Original Quality</option>
+            </select>
+        </div>
+    </div>
+
+    <script>
+        class GalleryManager {
+            constructor() {
+                this.images = [
+                    {
+                        id: 1,
+                        category: 'photoshoot',
+                        url: '/api/placeholder/400/600',
+                        title: 'Fashion Photoshoot 2024',
+                        description: 'Spring Collection'
+                    },
+                    {
+                        id: 2,
+                        category: 'events',
+                        url: '/api/placeholder/400/600',
+                        title: 'Award Show',
+                        description: 'Golden Globe Awards'
+                    },
+                    {
+                        id: 3,
+                        category: 'behindscenes',
+                        url: '/api/placeholder/400/600',
+                        title: 'Movie Set',
+                        description: 'Behind the Scenes'
+                    },
+                    {
+                        id: 4,
+                        category: 'personal',
+                        url: '/api/placeholder/400/600',
+                        title: 'Vacation',
+                        description: 'Beach Day'
+                    },
+                    // Add more images as needed
+                ];
+
+                this.currentCategory = 'all';
+                this.currentImageIndex = 0;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadGallery();
+            }
+
+            initializeElements() {
+                this.galleryGrid = document.getElementById('galleryGrid');
+                this.filterButtons = document.querySelectorAll('.filter-btn');
+                this.lightbox = document.querySelector('.lightbox');
+                this.lightboxImg = document.querySelector('.lightbox-img');
+                this.qualitySelect = document.querySelector('.image-quality-select');
+            }
+
+            bindEvents() {
+                // Filter buttons
+                this.filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        this.currentCategory = button.dataset.category;
+                        this.loadGallery();
+                    });
+                });
+
+                // Lightbox navigation
+                document.querySelector('.prev').addEventListener('click', () => this.navigateImage(-1));
+                document.querySelector('.next').addEventListener('click', () => this.navigateImage(1));
+                document.querySelector('.close-lightbox').addEventListener('click', () => this.closeLightbox());
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (this.lightbox.classList.contains('active')) {
+                        if (e.key === 'ArrowLeft') this.navigateImage(-1);
+                        if (e.key === 'ArrowRight') this.navigateImage(1);
+                        if (e.key === 'Escape') this.closeLightbox();
+                    }
+                });
+
+                // Quality selection
+                this.qualitySelect.addEventListener('change', () => this.updateImageQuality());
+            }
+
+            loadGallery() {
+                const filteredImages = this.currentCategory === 'all' 
+                    ? this.images 
+                    : this.images.filter(img => img.category === this.currentCategory);
+
+                this.galleryGrid.innerHTML = filteredImages.map((image, index) => this.createGalleryItem(image, index)).join('');
+
+                // Bind click events to new gallery items
+                document.querySelectorAll('.gallery-item').forEach((item, index) => {
+                    item.querySelector('.view-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.openLightbox(index);
+                    });
+                    item.querySelector('.download-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.downloadImage(filteredImages[index].url);
+                    });
+                });
+            }
+
+            createGalleryItem(image, index) {
+                return `
+                    <div class="gallery-item" data-index="${index}">
+                        <img src="${image.url}" alt="${image.title}">
+                        <div class="image-overlay">
+                            <h3>${image.title}</h3>
+                            <p>${image.description}</p>
+                            <div class="overlay-buttons">
+                                <button class="overlay-btn view-btn">View</button>
+                                <button class="overlay-btn download-btn">Download</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            openLightbox(index) {
+                this.currentImageIndex = index;
+                const image = this.getFilteredImages()[index];
+                this.lightboxImg.src = image.url;
+                this.lightboxImg.alt = image.title;
+                this.lightbox.classList.add('active');
+            }
+
+            closeLightbox() {
+                this.lightbox.classList.remove('active');
+            }
+
+            navigateImage(direction) {
+                const filteredImages = this.getFilteredImages();
+                this.currentImageIndex = (this.currentImageIndex + direction + filteredImages.length) % filteredImages.length;
+                this.lightboxImg.src = filteredImages[this.currentImageIndex].url;
+                this.lightboxImg.alt = filteredImages[this.currentImageIndex].title;
+            }
+
+            getFilteredImages() {
+                return this.currentCategory === 'all' 
+                    ? this.images 
+                    : this.images.filter(img => img.category === this.currentCategory);
+            }
+
+            updateImageQuality() {
+                const quality = this.qualitySelect.value;
+                // Here you would typically modify the image URL to get different quality versions
+                console.log(`Changing image quality to: ${quality}`);
+            }
+
+            async downloadImage(imageUrl) {
+                try {
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'image.jpg';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } catch (error) {
+                    console.error('Error downloading image:', error);
+                }
+            }
+        }
+
+        // Initialize gallery when page loads
+        
