@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Actress Categories</title>
+    <link rel="stylesheet" href="css/actress-list.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>Actress Categories</h1>
+    </header>
+
+    <div class="search-bar">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search actress by name, category, or region..."
+      />
+    </div>
+
+    <div class="categories-container">
+      <div class="category-tabs">
+        <button class="category-tab active" data-category="all">All</button>
+        <button class="category-tab" data-category="indian-web">
+          Indian Web Series
+        </button>
+        <button class="category-tab" data-category="philippine-web">
+          Philippine Web Series
+        </button>
+        <button class="category-tab" data-category="films">Film Actress</button>
+        <button class="category-tab" data-category="trending">Trending</button>
+        <button class="category-tab" data-category="new">New Faces</button>
+      </div>
+
+      <div class="actress-grid" id="actressGrid">
+        <!-- Dynamic content will be loaded here -->
+      </div>
+
+      <button class="load-more" id="loadMore">Load More</button>
+    </div>
+
+    <script>
+      // Sample actress data
+      const actressData = [
+        {
+          name: "Priya Sharma",
+          category: "indian-web",
+          image: "/api/placeholder/300/400",
+          series: "Love in Mumbai",
+          episodes: "15 Episodes",
+          rating: "4.5",
+          yearActive: "2020-Present",
+        },
+        {
+          name: "Maria Santos",
+          category: "philippine-web",
+          image: "/api/placeholder/300/400",
+          series: "Manila Nights",
+          episodes: "12 Episodes",
+          rating: "4.8",
+          yearActive: "2021-Present",
+        },
+        {
+          name: "Deepika Singh",
+          category: "films",
+          image: "/api/placeholder/300/400",
+          series: "Bollywood Dreams",
+          movies: "8 Films",
+          rating: "4.7",
+          yearActive: "2018-Present",
+        },
+        // Add more sample data as needed
+      ];
+
+      class ActressListManager {
+        constructor() {
+          this.currentCategory = "all";
+          this.searchTerm = "";
+          this.page = 1;
+          this.itemsPerPage = 8;
+
+          this.initializeElements();
+          this.bindEvents();
+          this.loadActresses();
+        }
+
+        initializeElements() {
+          this.grid = document.getElementById("actressGrid");
+          this.loadMoreBtn = document.getElementById("loadMore");
+          this.searchInput = document.querySelector(".search-input");
+          this.categoryTabs = document.querySelectorAll(".category-tab");
+        }
+
+        bindEvents() {
+          this.categoryTabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+              this.categoryTabs.forEach((t) => t.classList.remove("active"));
+              tab.classList.add("active");
+              this.currentCategory = tab.dataset.category;
+              this.page = 1;
+              this.loadActresses(true);
+            });
+          });
+
+          this.searchInput.addEventListener(
+            "input",
+            this.debounce(() => {
+              this.searchTerm = this.searchInput.value.toLowerCase();
+              this.page = 1;
+              this.loadActresses(true);
+            }, 300)
+          );
+
+          this.loadMoreBtn.addEventListener("click", () => {
+            this.page++;
+            this.loadActresses(false);
+          });
+        }
+
+        debounce(func, wait) {
+          let timeout;
+          return function executedFunction(...args) {
+            const later = () => {
+              clearTimeout(timeout);
+              func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+          };
+        }
+
+        filterActresses() {
+          return actressData.filter((actress) => {
+            const matchesCategory =
+              this.currentCategory === "all" ||
+              actress.category === this.currentCategory;
+            const matchesSearch =
+              this.searchTerm === "" ||
+              actress.name.toLowerCase().includes(this.searchTerm) ||
+              actress.series.toLowerCase().includes(this.searchTerm);
+            return matchesCategory && matchesSearch;
+          });
+        }
+
+        createActressCard(actress) {
+          return `
+                    <div class="actress-card">
+                        <div class="actress-image">
+                            <img src="${actress.image}" alt="${actress.name}">
+                        </div>
+                        <div class="actress-info">
+                            <h3 class="actress-name">${actress.name}</h3>
+                            <div class="actress-details">
+                                <p>${actress.series}</p>
+                                <p>${actress.episodes || actress.movies}</p>
+                                <p>⭐ ${actress.rating}</p>
+                                <p>${actress.yearActive}</p>
+                            </div>
+                            <span class="actress-category">${this.getCategoryLabel(
+                              actress.category
+                            )}</span>
+                        </div>
+                    </div>
+                `;
+        }
+
+        getCategoryLabel(category) {
+          const labels = {
+            "indian-web": "Indian Web Series",
+            "philippine-web": "Philippine Web Series",
+            films: "Films",
+          };
+          return labels[category] || category;
+        }
+
+        loadActresses(reset = false) {
+          const filtered = this.filterActresses();
+          const start = (this.page - 1) * this.itemsPerPage;
+          const end = start + this.itemsPerPage;
+          const pageItems = filtered.slice(start, end);
+
+          if (reset) {
+            this.grid.innerHTML = "";
+          }
+
+          pageItems.forEach((actress) => {
+            this.grid.insertAdjacentHTML(
+              "beforeend",
+              this.createActressCard(actress)
+            );
+          });
+
+          this.loadMoreBtn.style.display =
+            end >= filtered.length ? "none" : "block";
+        }
+      }
+
+      // Initialize the manager when the page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new ActressListManager();
+      });
+    </script>
+  </body>
+</html>

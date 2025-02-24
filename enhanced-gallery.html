@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Photo Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --text-color: #333;
+            --bg-color: #f5f5f5;
+            --overlay-color: rgba(0, 0, 0, 0.7);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .gallery-filters {
+            background: white;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 1200px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            background: #f0f0f0;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .gallery-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-grid.loading {
+            opacity: 0.5;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .gallery-item.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .gallery-item::before {
+            content: '';
+            display: block;
+            padding-top: 100%;
+        }
+
+        .gallery-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .item-overlay {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background: var(--overlay-color);
+            color: white;
+            padding: 1rem;
+            transition: bottom 0.3s ease;
+        }
+
+        .gallery-item:hover .item-overlay {
+            bottom: 0;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .lightbox.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .filter-buttons {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .filter-btn {
+                flex: 0 0 auto;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Enhanced Photo Gallery</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search images...">
+    </div>
+
+    <div class="gallery-filters">
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-category="all">All</button>
+            <button class="filter-btn" data-category="photoshoots">Photoshoots</button>
+            <button class="filter-btn" data-category="events">Events</button>
+            <button class="filter-btn" data-category="behindscenes">Behind the Scenes</button>
+            <button class="filter-btn" data-category="magazine">Magazine Covers</button>
+        </div>
+    </div>
+
+    <div class="gallery-container">
+        <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+
+    <div class="lightbox">
+        <button class="close-lightbox">×</button>
+        <div class="lightbox-content">
+            <img src="" alt="Lightbox Image">
+            <div class="lightbox-nav">
+                <button class="nav-btn prev">❮</button>
+                <button class="nav-btn next">❯</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-spinner"></div>
+
+    <script>
+        // Sample gallery data
+        const galleryData = [
+            {
+                id: 1,
+                category: 'photoshoots',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Fashion Photoshoot 2024',
+                description: 'Spring Collection',
+                tags: ['fashion', 'spring', 'photoshoot']
+            },
+            {
+                id: 2,
+                category: 'events',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Award Ceremony',
+                description: 'Golden Globe Awards',
+                tags: ['awards', 'ceremony', 'red carpet']
+            },
+            {
+                id: 3,
+                category: 'magazine',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Vogue Cover',
+                description: 'Summer Edition 2024',
+                tags: ['magazine', 'cover', 'fashion']
+            },
+            {
+                id: 4,
+                category: 'behindscenes',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Movie Set',
+                description: 'Behind the Scenes',
+                tags: ['movie', 'filming', 'acting']
+            },
+            {
+                id: 5,
+                category: 'events',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Movie Premiere',
+                description: 'Red Carpet Event',
+                tags: ['premiere', 'red carpet', 'movie']
+            },
+            {
+                id: 6,
+                category: 'photoshoots',
+                imageUrl: '/api/placeholder/400/400',
+                title: 'Editorial Shoot',
+                description: 'Magazine Feature',
+                tags: ['editorial', 'fashion', 'magazine']
+            }
+        ];
+
+        class GalleryManager {
+            constructor() {
+                this.currentCategory = 'all';
+                this.currentIndex = 0;
+                this.filteredItems = [];
+                this.searchTerm = '';
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadGallery();
+            }
+
+            initializeElements() {
+                this.gallery = document.getElementById('gallery-grid');
+                this.lightbox = document.querySelector('.lightbox');
+                this.lightboxImg = this.lightbox.querySelector('img');
+                this.searchInput = document.querySelector('.search-input');
+                this.filterButtons = document.querySelectorAll('.filter-btn');
+                this.spinner = document.querySelector('.loading-spinner');
+            }
+
+            bindEvents() {
+                // Filter buttons
+                this.filterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.filterButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        this.currentCategory = button.dataset.category;
+                        this.filterAndDisplayItems();
+                    });
+                });
+
+                // Search input
+                this.searchInput.addEventListener('input', this.debounce(() => {
+                    this.searchTerm = this.searchInput.value.toLowerCase();
+                    this.filterAndDisplayItems();
+                }, 300));
+
+                // Lightbox navigation
+                document.querySelector('.close-lightbox').addEventListener('click', () => this.closeLightbox());
+                document.querySelector('.nav-btn.prev').addEventListener('click', () => this.navigateLightbox(-1));
+                document.querySelector('.nav-btn.next').addEventListener('click', () => this.navigateLightbox(1));
+                
+                // Close lightbox on background click
+                this.lightbox.addEventListener('click', (e) => {
+                    if (e.target === this.lightbox) {
+                        this.closeLightbox();
+                    }
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (this.lightbox.classList.contains('active')) {
+                        if (e.key === 'Escape') this.closeLightbox();
+                        if (e.key === 'ArrowLeft') this.navigateLightbox(-1);
+                        if (e.key === 'ArrowRight') this.navigateLightbox(1);
+                    }
+                });
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            async loadGallery() {
+                this.showSpinner();
+                await this.simulateLoading();
+                this.filterAndDisplayItems();
+                this.hideSpinner();
+            }
+
+            async simulateLoading() {
+                return new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            showSpinner() {
+                this.spinner.style.display = 'block';
+                this.gallery.classList.add('loading');
+            }
+
+            hideSpinner() {
+                this.spinner.style.display = 'none';
+                this.gallery.classList.remove('loading');
+            }
+
+            filterAndDisplayItems() {
+                this.showSpinner();
+                
+                this.filteredItems = galleryData.filter(item => {
+                    const matchesCategory = this.currentCategory === 'all' || item.category === this.currentCategory;
+                    const matchesSearch = this.searchTerm === '' || 
+                        item.title.toLowerCase().includes(this.searchTerm) ||
+                        item.description.toLowerCase().includes(this.searchTerm) ||
+                        item.tags.some(tag => tag.toLowerCase().includes(this.searchTerm));
+                    
+                    return matchesCategory && matchesSearch;
+                });
+
+                this.renderGallery();
+                this.hideSpinner();
+            }
+
+            renderGallery() {
+                this.gallery.innerHTML = '';
+                
+                this.filteredItems.forEach((item, index) => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    galleryItem.innerHTML = `
+                        <img src="${item.imageUrl}" alt="${item.title}">
+                        <div class="item-overlay">
+                            <h3 class="item-title">${item.title}</h3>
+                            <p class="item-description">${item.description}</p>
+                        </div>
+                    `;
+
+                    gall
