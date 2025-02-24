@@ -41,7 +41,6 @@
     </div>
 
     <script>
-      // Sample actress data
       const actressData = [
         {
           name: "Priya Sharma",
@@ -51,6 +50,7 @@
           episodes: "15 Episodes",
           rating: "4.5",
           yearActive: "2020-Present",
+          visitLink: "actress-profile.html",
         },
         {
           name: "Maria Santos",
@@ -60,6 +60,7 @@
           episodes: "12 Episodes",
           rating: "4.8",
           yearActive: "2021-Present",
+          visitLink: "maria-profile.html",
         },
         {
           name: "Deepika Singh",
@@ -69,8 +70,8 @@
           movies: "8 Films",
           rating: "4.7",
           yearActive: "2018-Present",
+          visitLink: "deepika-profile.html",
         },
-        // Add more sample data as needed
       ];
 
       class ActressListManager {
@@ -145,33 +146,24 @@
 
         createActressCard(actress) {
           return `
-                    <div class="actress-card">
-                        <div class="actress-image">
-                            <img src="${actress.image}" alt="${actress.name}">
-                        </div>
-                        <div class="actress-info">
-                            <h3 class="actress-name">${actress.name}</h3>
-                            <div class="actress-details">
-                                <p>${actress.series}</p>
-                                <p>${actress.episodes || actress.movies}</p>
-                                <p>⭐ ${actress.rating}</p>
-                                <p>${actress.yearActive}</p>
-                            </div>
-                            <span class="actress-category">${this.getCategoryLabel(
-                              actress.category
-                            )}</span>
-                        </div>
-                    </div>
-                `;
-        }
-
-        getCategoryLabel(category) {
-          const labels = {
-            "indian-web": "Indian Web Series",
-            "philippine-web": "Philippine Web Series",
-            films: "Films",
-          };
-          return labels[category] || category;
+            <div class="actress-card">
+              <div class="actress-image">
+                <img src="${actress.image}" alt="${actress.name}">
+              </div>
+              <div class="actress-info">
+                <h3 class="actress-name">${actress.name}</h3>
+                <div class="actress-details">
+                  <p>${actress.series}</p>
+                  <p>${actress.episodes || actress.movies}</p>
+                  <p>⭐ ${actress.rating}</p>
+                  <p>${actress.yearActive}</p>
+                </div>
+                <a href="${
+                  actress.visitLink
+                }" class="visit-link">Visit Profile</a>
+              </div>
+            </div>
+          `;
         }
 
         loadActresses(reset = false) {
@@ -196,7 +188,6 @@
         }
       }
 
-      // Initialize the manager when the page loads
       document.addEventListener("DOMContentLoaded", () => {
         new ActressListManager();
       });
